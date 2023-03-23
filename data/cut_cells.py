@@ -6,9 +6,9 @@ import cv2 as cv
 from matplotlib import pyplot as plt
 
 def main():
-    segmentation_dir = 'SegmentationObjectGood'
+    segmentation_dir = 'segmentation_object'
     images_dir = 'valid_bf_imgs_dir_png'
-    separated_cells_dir = 'separated_cells'
+    separated_cells_dir = 'test_separated_cells'
 
     if not os.path.isdir(separated_cells_dir):
         os.mkdir(separated_cells_dir)

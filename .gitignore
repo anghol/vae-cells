@@ -1,4 +1,7 @@
-data/separated_cells
-data/test
+data/bacterias
+data/segmentation_object
+data/valid_bf_imgs_dir_png
+mnist-images
+
 __pycache__
-data/__pycache__
+venv
