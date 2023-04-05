@@ -28,18 +28,3 @@ def set_all_seeds(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-
-
-def vae_logging(batch_idx: int, logging_interval: int, log_dict: dict, losses: list):
-    loss, pixelwise, kl_div = losses
-
-    log_dict["train_combined_loss_per_batch"].append(loss)
-    log_dict["train_reconstruction_loss_per_batch"].append(pixelwise)
-    log_dict["train_kl_loss_per_batch"].append(kl_div)
-
-    if not batch_idx % logging_interval:
-            print(
-                "Epoch: %03d/%03d | Batch %04d/%04d | Loss: %.4f"
-                % (epoch + 1, NUM_EPOCHS, batch_idx, len(train_loader), loss)
-            )
-
