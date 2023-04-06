@@ -5,3 +5,5 @@ mnist-images
 
 __pycache__
 venv
+lightning_logs
+testnotebook.ipynb

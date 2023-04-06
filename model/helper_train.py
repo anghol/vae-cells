@@ -2,8 +2,6 @@ import time
 import torch
 import torch.nn as nn
 
-from model.vae import VAE
-
 
 def train(num_epochs: int, model: nn.Module, optimizer, device, train_loader, logging_interval: int, reconstruction_term_weight=1):
     loss_fn = nn.functional.mse_loss
