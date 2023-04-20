@@ -2,6 +2,7 @@ data/bacterias
 data/segmentation_object
 data/valid_bf_imgs_dir_png
 mnist-images
+substrate_dir
 
 __pycache__
 venv

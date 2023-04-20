@@ -45,7 +45,7 @@ def plot_original_and_decoded(model, data_loader, n_images, device):
             ax[j].set(title=" ".join([title, str(j + 1)]))
 
 
-def generate_and_plot(model, n_images, device):
+def generate_and_plot(model, n_images, device, image_name=''):
     latent_size = model.latent_size
     with torch.no_grad():
         rand_features = torch.randn(n_images, latent_size).to(device)
@@ -53,7 +53,10 @@ def generate_and_plot(model, n_images, device):
 
     grid = make_grid(generated_images, nrow=int(np.sqrt(n_images)))
     grid = grid.detach().to(torch.device("cpu"))
-    grid = np.transpose(grid, (1, 2, 0))
+    grid = np.transpose(grid.numpy(), (1, 2, 0))
     plt.imshow(grid, cmap="gray", vmin=0, vmax=255)
     plt.xticks([])
     plt.yticks([])
+
+    if image_name:
+        plt.imsave(image_name, grid, cmap='gray')

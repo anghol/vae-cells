@@ -6,9 +6,9 @@ import cv2 as cv
 from matplotlib import pyplot as plt
 
 def main():
-    segmentation_dir = 'segmentation_object'
-    images_dir = 'valid_bf_imgs_dir_png'
-    separated_cells_dir = 'test_separated_cells'
+    segmentation_dir = '/usr/src/data/segmentation_object'
+    images_dir = '/usr/src/data/valid_bf_imgs_dir_png'
+    separated_cells_dir = '/usr/src/data/test_separated_cells'
 
     if not os.path.isdir(separated_cells_dir):
         os.mkdir(separated_cells_dir)
@@ -32,7 +32,7 @@ def main():
         colors = np.delete(colors, 0, axis=0) # удалить черный
 
         zeros = np.zeros_like(mask)
-        ones = np.ones_like(mask) * 255
+        ones = np.ones_like(mask) * 255 # type: ignore
 
         # separate_cells = []
         os.chdir(separated_cells_dir)
@@ -52,7 +52,7 @@ def main():
 
             # накладываем на исходное изображение бинарную маску одной бактерии
             cell = image.copy()
-            cell[~(cell_mask > 0)] = 0
+            cell[~(cell_mask > 0)] = 0 # type: ignore
 
             # вырезаем прямоугольник с бактерией
             cell = cell[y:y+h, x:x+w]
@@ -68,4 +68,5 @@ def main():
     print('FINISH!\nTotal time:', stop_time - start_time)
 
 if __name__ == '__main__':
+    # print(os.listdir())
     main()

@@ -54,7 +54,7 @@ class Encoder(nn.Module):
             nn.Conv2d(64, 64, stride=(2, 2), kernel_size=(3, 3), padding=1),
             nn.LeakyReLU(0.01),
             nn.Conv2d(64, 64, stride=(1, 1), kernel_size=(3, 3), padding=1),
-            nn.Flatten()
+            nn.Flatten() # (N, 64, 7, 7) -> (N, 3136)
         )
         
         self.z_mean = torch.nn.Linear(3136, self.latent_size)
