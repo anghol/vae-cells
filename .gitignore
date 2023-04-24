@@ -1,10 +1,9 @@
-data/bacterias
+data/separated_bacterias
 data/segmentation_object
-data/valid_bf_imgs_dir_png
-mnist-images
-substrate_dir
+data/source_images
+data/substrates
+data/part_substrates
 
 __pycache__
 venv
 lightning_logs
-testnotebook.ipynb
