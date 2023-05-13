@@ -8,20 +8,22 @@ class Encoder(nn.Module):
         self.latent_size = latent_size
 
         self.convolution_seria = nn.Sequential(
-            nn.Conv2d(1, 16, stride=(1, 1), kernel_size=(3, 3), padding=1),
+            nn.Conv2d(1, 32, stride=(1, 1), kernel_size=(3, 3), padding=1),
+            nn.Dropout2d(),
             nn.LeakyReLU(0.01),
-            nn.Conv2d(16, 32, stride=(2, 2), kernel_size=(3, 3), padding=1),
+            nn.Conv2d(32, 64, stride=(2, 2), kernel_size=(3, 3), padding=1),
             nn.LeakyReLU(0.01),
-            nn.Conv2d(32, 32, stride=(3, 3), kernel_size=(3, 3), padding=1),
+            nn.Conv2d(64, 64, stride=(3, 3), kernel_size=(3, 3), padding=1),
             nn.LeakyReLU(0.01),
-            nn.Conv2d(32, 32, stride=(3, 3), kernel_size=(3, 3), padding=1),
+            nn.Conv2d(64, 64, stride=(3, 3), kernel_size=(3, 3), padding=1),
+            nn.Dropout2d(),
             nn.LeakyReLU(0.01),
-            nn.Conv2d(32, 32, stride=(2, 2), kernel_size=(3, 3), padding=1),
-            nn.Flatten() # (N, 32, 5, 8) -> (N, 1280)
+            nn.Conv2d(64, 64, stride=(2, 2), kernel_size=(3, 3), padding=1),
+            nn.Flatten() # (N, 64, 5, 8) -> (N, 2560)
         )
         
-        self.z_mean = torch.nn.Linear(1280, self.latent_size)
-        self.z_log_var = torch.nn.Linear(1280, self.latent_size)
+        self.z_mean = torch.nn.Linear(2560, self.latent_size)
+        self.z_log_var = torch.nn.Linear(2560, self.latent_size)
     
     def forward(self, x):
         x = self.convolution_seria(x)
