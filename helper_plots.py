@@ -1,5 +1,7 @@
+import os
 import torch
-from torchvision.utils import make_grid
+import torchvision.transforms as transforms
+from torchvision.utils import make_grid, save_image
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -45,18 +47,38 @@ def plot_original_and_decoded(model, data_loader, n_images, device):
             ax[j].set(title=" ".join([title, str(j + 1)]))
 
 
-def generate_and_plot(model, n_images, device, image_name=''):
+def show_grid_samples(model, n_images: int, file_name="", save_dir=os.getcwd()):
     latent_size = model.latent_size
     with torch.no_grad():
-        rand_features = torch.randn(n_images, latent_size).to(device)
+        rand_features = torch.randn(n_images, latent_size)
         generated_images = model.decoder(rand_features)
 
-    grid = make_grid(generated_images, nrow=int(np.sqrt(n_images)))
-    grid = grid.detach().to(torch.device("cpu"))
-    grid = np.transpose(grid.numpy(), (1, 2, 0))
-    plt.imshow(grid, cmap="gray", vmin=0, vmax=255)
-    plt.xticks([])
-    plt.yticks([])
+    grid = make_grid(generated_images, nrow=int(np.sqrt(n_images)), pad_value=1)
+    grid = transforms.ToPILImage()(grid)
+    grid.show()
 
-    if image_name:
-        plt.imsave(image_name, grid, cmap='gray')
+    if file_name:
+        path = f"{save_dir}/{file_name}.png"
+        grid.save(path)
+
+    return generated_images
+
+
+def generate_and_save_samples(samples_dir, n_samples, batch_size, model, image_size):
+    latent_size = model.latent_size
+
+    last_batch = n_samples % batch_size
+    count = n_samples // batch_size if last_batch == 0 else n_samples // batch_size + 1
+    idx = 0
+
+    for step in range(count):
+        with torch.no_grad():
+            if step == count - 1 and last_batch != 0:
+                rand_features = torch.randn(last_batch, latent_size)
+            else:
+                rand_features = torch.randn(batch_size, latent_size)
+            samples = model.decoder(rand_features)
+
+        for sample in samples:
+            save_image(sample, f"{samples_dir}/sample_{idx}.png")
+            idx += 1

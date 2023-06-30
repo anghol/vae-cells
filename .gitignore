@@ -3,6 +3,7 @@ data/segmentation_object
 data/source_images
 data/substrates
 data/part_substrates
+samples
 
 __pycache__
 venv
