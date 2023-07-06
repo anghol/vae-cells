@@ -1,6 +1,9 @@
 import time
+import numpy as np
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
+from torchmetrics.image.fid import FrechetInceptionDistance
 
 
 def train(num_epochs: int, model: nn.Module, optimizer, device, train_loader, logging_interval: int, reconstruction_term_weight=1):
@@ -86,3 +89,54 @@ def compute_epoch_loss_autoencoder(model, data_loader, loss_fn, device):
 
         curr_loss = curr_loss / num_examples
         return curr_loss
+
+
+def count_fid_metric(
+    dataloader: DataLoader,
+    model,
+    image_size: int,
+    latent_size: int,
+    channels: int,
+    min_n_samples=1000,
+    n_feature=2048,
+    normalize=False,
+):
+    """Compute the FID metric for evaluation of the diffusion models"""
+
+    batch_size = next(iter(dataloader)).shape[0]
+    count = int(np.ceil(min_n_samples / batch_size))
+
+    real_imgs, fake_imgs = [], []
+
+    start = time.time()
+    for i in range(count):
+        images = next(iter(dataloader))
+        real_imgs.append(images)
+
+        with torch.no_grad():
+            rand_features = torch.randn(batch_size, latent_size)
+            samples = model.decoder(rand_features)
+            fake_imgs.append(samples)
+    stop = time.time()
+
+    real_imgs = torch.cat(real_imgs)
+    real_imgs = real_imgs if normalize else (real_imgs * 255).to(torch.uint8)
+
+    fake_imgs = np.concatenate(fake_imgs)
+    fake_imgs = torch.tensor(fake_imgs)
+    fake_imgs = fake_imgs if normalize else (fake_imgs * 255).to(torch.uint8)
+    print(f"{fake_imgs.shape[0]} samples are generated, time = {stop - start :.3f} sec")
+
+    if channels != 3:
+        real_imgs = real_imgs.repeat(1, 3, 1, 1)
+        fake_imgs = fake_imgs.repeat(1, 3, 1, 1)
+
+    fid = FrechetInceptionDistance(feature=n_feature, normalize=normalize)
+    start = time.time()
+    fid.update(real_imgs, real=True)
+    fid.update(fake_imgs, real=False)
+    metric = fid.compute()
+    stop = time.time()
+    print(f"FID is computed, time = {stop - start :.3f} sec")
+
+    return metric

@@ -1,0 +1,10 @@
+name: venv
+dependencies:
+  - jupyter
+  - numpy
+  - pandas
+  - matplotlib
+  - opencv
+  - pip:
+    - black
+    - jupyter-black

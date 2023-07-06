@@ -5,6 +5,8 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 
+""" Script for cutting out separate bacterias from images """
+
 def main():
     segmentation_dir = '/usr/src/data/segmentation_object'
     images_dir = '/usr/src/data/valid_bf_imgs_dir_png'

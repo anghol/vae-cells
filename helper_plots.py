@@ -47,6 +47,26 @@ def plot_original_and_decoded(model, data_loader, n_images, device):
             ax[j].set(title=" ".join([title, str(j + 1)]))
 
 
+def show_image(image, title=None, save_fig=False):
+    """ Show image from FloatTensor 
+    
+    Params:
+    image - the source tensor
+    title - string for title of the figure
+    figsize - size in dpi
+    save_fig - is it need to save picture
+    """
+    
+    _, height, width = image.shape
+    # plt.figure(figsize=figsize)
+    plt.imshow(image.reshape(height, width), cmap='gray')
+    if title:
+        plt.title(title)
+    if save_fig:
+        plt.savefig(f'fig_{title}.png')
+    plt.show()
+    
+
 def show_grid_samples(model, n_images: int, file_name="", save_dir=os.getcwd()):
     latent_size = model.latent_size
     with torch.no_grad():
@@ -62,6 +82,23 @@ def show_grid_samples(model, n_images: int, file_name="", save_dir=os.getcwd()):
         grid.save(path)
 
     return generated_images
+
+
+def show_images_bar(images: list[np.ndarray], cmap="gray", titles=[]):
+    n_images = len(images)
+    _, axes = plt.subplots(1, n_images)
+    axes = np.array(axes)
+
+    for ax, img in zip(axes.flat, images):
+        if len(img.shape) > 2:
+            ax.imshow(img)
+        else:
+            ax.imshow(img, cmap=cmap)
+        ax.set(xticks=[], yticks=[])
+
+    if titles:
+        for ax, title in zip(axes.flat, titles):
+            ax.set_title(title)
 
 
 def generate_and_save_samples(samples_dir, n_samples, batch_size, model, image_size):

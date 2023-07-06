@@ -6,5 +6,4 @@ data/part_substrates
 samples
 
 __pycache__
-venv
 lightning_logs

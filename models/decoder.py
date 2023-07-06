@@ -18,8 +18,10 @@ class Decoder(nn.Module):
         self.latent_size = latent_size
 
         self.convolution_transpose_seria = nn.Sequential(
-            torch.nn.Linear(self.latent_size, 3136),
-            nn.Unflatten(1, (64, 7, 7)),
+            # if image_size = (56, 56): (N, 64, 7, 7) and (N, 3136)
+            # if image_size = (64, 64): (N, 64, 8, 8) and (N, 4096)
+            torch.nn.Linear(self.latent_size, 4096),
+            nn.Unflatten(1, (64, 8, 8)),
             nn.ConvTranspose2d(64, 64, stride=(1, 1), kernel_size=(3, 3), padding=1),
             nn.LeakyReLU(0.01),
             nn.ConvTranspose2d(64, 64, stride=(2, 2), kernel_size=(3, 3), padding=1),
@@ -29,7 +31,7 @@ class Decoder(nn.Module):
             nn.ConvTranspose2d(64, 32, stride=(2, 2), kernel_size=(3, 3), padding=0),
             nn.LeakyReLU(0.01),
             nn.ConvTranspose2d(32, 1, stride=(1, 1), kernel_size=(3, 3), padding=0),
-            Trim(self.image_size),  # 1x57x57 -> 1x56x56
+            Trim(self.image_size),
             nn.Sigmoid()
         )
 
