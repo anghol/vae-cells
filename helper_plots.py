@@ -5,6 +5,7 @@ from torchvision.utils import make_grid, save_image
 
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image
 
 def plot_all_losses(log_dict: dict):
     # defined losses for plotting
@@ -47,19 +48,31 @@ def plot_original_and_decoded(model, data_loader, n_images, device):
             ax[j].set(title=" ".join([title, str(j + 1)]))
 
 
-def show_image(image, title=None, save_fig=False):
-    """ Show image from FloatTensor 
+def show_image(image: torch.Tensor | np.ndarray, title='', figsize=(2.5, 2.5), save_fig=False):
+    """ Show image from tensor 
     
-    Params:
-    image - the source tensor
-    title - string for title of the figure
-    figsize - size in dpi
-    save_fig - is it need to save picture
+    Params:\n
+    image - The the source tensor
+    title - The string for title of the figure
+    figsize - The size in dpi
+    save_fig - Is it need to save picture
     """
-    
-    _, height, width = image.shape
-    # plt.figure(figsize=figsize)
-    plt.imshow(image.reshape(height, width), cmap='gray')
+    assert len(image.shape) == 3
+    if isinstance(image, torch.Tensor):
+        image = image.permute(1, 2, 0)
+    height, width, channels = image.shape
+
+    if image.max() < 1:
+        image *= 255
+
+    plt.figure(figsize=figsize)
+    if channels == 1:
+        plt.imshow(image, cmap='gray', vmin=0, vmax=255)
+    else:
+        plt.imshow(image)
+    plt.xticks([])
+    plt.yticks([])
+
     if title:
         plt.title(title)
     if save_fig:
@@ -70,7 +83,7 @@ def show_image(image, title=None, save_fig=False):
 def show_grid_samples(model, n_images: int, file_name="", save_dir=os.getcwd()):
     latent_size = model.latent_size
     with torch.no_grad():
-        rand_features = torch.randn(n_images, latent_size)
+        rand_features = torch.randn(n_images, latent_size).to(model.device)
         generated_images = model.decoder(rand_features)
 
     grid = make_grid(generated_images, nrow=int(np.sqrt(n_images)), pad_value=1)
@@ -84,16 +97,25 @@ def show_grid_samples(model, n_images: int, file_name="", save_dir=os.getcwd()):
     return generated_images
 
 
-def show_images_bar(images: list[np.ndarray], cmap="gray", titles=[]):
+def show_images_bar(images: list | torch.Tensor | np.ndarray, cmap="gray", titles=[]):
     n_images = len(images)
     _, axes = plt.subplots(1, n_images)
     axes = np.array(axes)
 
+    if isinstance(images, torch.Tensor):
+        images = images.detach().cpu()
+
+        assert images.dim() == 4
+        images = images.permute(0, 2, 3, 1)
+
+    if isinstance(images, list):
+        images = np.array(images)
+
     for ax, img in zip(axes.flat, images):
-        if len(img.shape) > 2:
-            ax.imshow(img)
-        else:
+        if img.shape[-1] == 1:
             ax.imshow(img, cmap=cmap)
+        else:
+            ax.imshow(img)
         ax.set(xticks=[], yticks=[])
 
     if titles:
@@ -119,3 +141,62 @@ def generate_and_save_samples(samples_dir, n_samples, batch_size, model, image_s
         for sample in samples:
             save_image(sample, f"{samples_dir}/sample_{idx}.png")
             idx += 1
+
+
+def create_training_animation(animation_name: str, images_dir: str):
+    frames = []
+
+    filenames = list(filter(lambda name: name.endswith("png"), os.listdir(images_dir)))
+    filenames.sort(key=lambda x: int(x[5:-4]))
+    for file in filenames:
+        frame = Image.open(f"{images_dir}/{file}")
+        frames.append(frame)
+
+    frames[0].save(
+        f"{animation_name}.gif",
+        save_all=True,
+        append_images=frames[1:],
+        optimize=True,
+        duration=100,
+        loop=0,
+    )
+
+
+def interpolation(
+    vae, x1: torch.Tensor, x2: torch.Tensor, n_steps: int
+) -> torch.Tensor:
+    assert len(x1.shape) == len(x2.shape) == 3
+    x1 = x1.unsqueeze(0)
+    x2 = x2.unsqueeze(0)
+    x = torch.cat((x1, x2)).to(vae.device)
+
+    encoded = vae.encoding_fn(x)
+    z1 = encoded[0]
+    z2 = encoded[1]
+
+    z = torch.stack([z1 + (z2 - z1) * t for t in np.linspace(0, 1, n_steps)])
+    interpolate_list = vae.decoder(z)
+    interpolate_list = interpolate_list.to("cpu")
+
+    return interpolate_list
+
+
+def show_interpolation(interp_list: torch.Tensor, n_steps: int, animation_name=""):
+    grid = make_grid(interp_list, nrow=n_steps)
+    grid = transforms.ToPILImage()(grid)
+    grid.show()
+
+    if animation_name:
+        frames = []
+        for stage in interp_list:
+            stage = transforms.ToPILImage()(stage)
+            frames.append(stage)
+
+        frames[0].save(
+            f"{animation_name}.gif",
+            save_all=True,
+            append_images=frames[1:],
+            optimize=True,
+            duration=100,
+            loop=0,
+        )

@@ -94,7 +94,7 @@ class ConvolutionalVAE(nn.Module):
 
         self.decoder = nn.Sequential(
             torch.nn.Linear(self.latent_size, 4096),
-            Reshape(-1, 64, 7, 7),
+            Reshape(-1, 64, 8, 8),
             nn.ConvTranspose2d(64, 64, stride=(1, 1), kernel_size=(3, 3), padding=1),
             nn.LeakyReLU(0.01),
             nn.ConvTranspose2d(64, 64, stride=(2, 2), kernel_size=(3, 3), padding=1),

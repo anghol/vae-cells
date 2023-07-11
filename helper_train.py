@@ -6,7 +6,16 @@ from torch.utils.data import DataLoader
 from torchmetrics.image.fid import FrechetInceptionDistance
 
 
-def train(num_epochs: int, model: nn.Module, optimizer, device, train_loader, logging_interval: int, reconstruction_term_weight=1):
+def train(
+        num_epochs: int,
+        model: nn.Module,
+        optimizer,
+        device,
+        train_loader,
+        logging_interval: int,
+        reconstruction_term_weight=1
+    ):
+    
     loss_fn = nn.functional.mse_loss
 
     log_dict = {'train_combined_loss_per_batch': [],

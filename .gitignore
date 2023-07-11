@@ -1,9 +1,6 @@
-data/separated_bacterias
-data/segmentation_object
-data/source_images
-data/substrates
-data/part_substrates
-samples
-
 __pycache__
+data
+samples
 lightning_logs
+
+*.pt
